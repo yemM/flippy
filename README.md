@@ -1,0 +1,4 @@
+flippy
+======
+
+jQuery Plugin
