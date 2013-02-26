@@ -204,11 +204,11 @@ Feb 11 2012 - v1.0 : First release
 			_Before = opts.onStart;
 			_Midway = opts.onMidway;
 			_After = opts.onFinish;
-			_isIE = $.browser.msie;
-			_isIE9 = ($.browser.version == "9.0");
-			_isIE8 = ($.browser.version == "8.0");
-			_isIE7 = ($.browser.version == "7.0");
-			_isIE6 = ($.browser.version == "6.0");
+			_isIE = (navigator.appName == "Microsoft Internet Explorer");
+			_isIE9 = (navigator.appVersion == "9.0");
+			_isIE8 = (navigator.appVersion == "8.0");
+			_isIE7 = (navigator.appVersion == "7.0");
+			_isIE6 = (navigator.appVersion == "6.0");
 			
 			
 			var _i = 1;
