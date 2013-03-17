@@ -4,6 +4,24 @@ FLIPPY jQuery plugin (http://guilhemmarty.com/flippy)
 
 @author : Guilhem MARTY (bonjour@guilhemmarty.com)
 
+@version: 1.0.2
+
+@changelog:
+Mar 17 2013 - v1.0.2 : bug fix with IE10+. Can use rgba in color and color target
+
+Feb 11 2012 - v1.0.1 : bug fix with IE9
+
+Feb 11 2012 - v1.0 : First release
+
+*/
+
+
+/*
+
+FLIPPY jQuery plugin (http://guilhemmarty.com/flippy)
+
+@author : Guilhem MARTY (bonjour@guilhemmarty.com)
+
 @version: 1.0
 
 @changelog:
@@ -197,6 +215,8 @@ Feb 11 2012 - v1.0 : First release
 			_CenterX = (_CenterX != '')? _CenterX : '';
 			_CenterY = (_CenterY != '')? _CenterY : '';
 			_Color = (_Color != '')? _Color : '';
+			_Color_target_is_rgba = (opts.color_target.substr(0,5) == "rgba(");
+			_Color_target_alpha = (_Color_target_is_rgba)? eval(opts.color_target.substr(3,opts.color_target.length-4).split(',')[3]) : 1;
 			_Color_target = convertColor(opts.color_target);
 			_Direction = opts.direction;
 			_Light = opts.light;
@@ -205,28 +225,26 @@ Feb 11 2012 - v1.0 : First release
 			_Midway = opts.onMidway;
 			_After = opts.onFinish;
 			_isIE = (navigator.appName == "Microsoft Internet Explorer");
-			_isIE9 = (navigator.appVersion == "9.0");
-			_isIE8 = (navigator.appVersion == "8.0");
-			_isIE7 = (navigator.appVersion == "7.0");
-			_isIE6 = (navigator.appVersion == "6.0");
-			
-			
+			_isIE9orHigher = !(navigator.appVersion in new Array("6.0","7.0","8.0"));
+			_Container = null;
 			var _i = 1;
 			return this.each(function(){
-				$this = $(this);
+				_Container = $this = $(this);
 				_nW = $this.width();
 				_nH = $this.height();
 				_W = $this.outerWidth();
 				_H = $this.outerHeight();
 				_Active = true;
 				_Before();
-				
 				_Content = (typeof _Content == "object") ? _Content.html() : _Content;
-				_Color = convertColor($this.css("background-color"));
+				_Color = $this.css("background-color");
+				_Color_alpha = (_Color.substr(0,5) == "rgba(")? eval(_Color.substr(3,_Color.length-4).split(',')[3]) : 1;
+				_Color = convertColor(_Color);
 				$this
 					.empty()
 					.data("color",$this.css("background-color"))
 					.css({
+						 "opacity":_Color_alpha,
 						 "background":"none",
 						 "position":"relative",
 						 "overflow":"visible"
@@ -282,13 +300,13 @@ Feb 11 2012 - v1.0 : First release
 								});
 						break;
 					}
-				drawFlippy();
+				drawFlippy($(this));
 			});
 		}
 	}
 	
 	function new_flippy(cv_pattern){
-		if(_isIE && !_isIE9){
+		if(_isIE && !_isIE9orHigher){
 			if($this.attr('id') == ""){
 				$this.attr("id","flippy_container");
 			}
@@ -306,14 +324,14 @@ Feb 11 2012 - v1.0 : First release
 		
 		if(_Ang > 90 && _Ang <= (90+_Step_ang)){
 			_Midway();
+			_Container.css({"opacity":_Color_target_alpha});
 		}
-		
 		_Ang = (_Ang > (180+_Step_ang)) ? _Ang-(180+_Step_ang) : _Ang;
 		var PI = Math.PI
 		var rad = (_Ang/180)*PI;
 		
 		var canvas = document.getElementById("flippy");
-		if(_isIE && !_isIE9){G_vmlCanvasManager.initElement(canvas);}
+		if(_isIE && !_isIE9orHigher){G_vmlCanvasManager.initElement(canvas);}
 		var ctx = canvas.getContext("2d");
 		ctx.clearRect(0, 0, _W+(2*_CenterX), _H+(2*_CenterY));
 		ctx.beginPath();
@@ -393,26 +411,20 @@ Feb 11 2012 - v1.0 : First release
 				+toHex(eval(thecolor.substr(4,thecolor.length).split(',')[0]))
 				+toHex(eval(thecolor.substr(3,thecolor.length).split(',')[1]))
 				+toHex(eval(thecolor.substr(3,thecolor.length-4).split(',')[2]))
-		};
+		}
+
+		if(thecolor.substr(0,5) == "rgba("){
+			thecolor = "#"
+				+toHex(eval(thecolor.substr(5,thecolor.length).split(',')[0]))
+				+toHex(eval(thecolor.substr(3,thecolor.length).split(',')[1]))
+				+toHex(eval(thecolor.substr(3,thecolor.length-4).split(',')[2]))
+		}
+
 		return thecolor;
 	}
 	
 	function toDec(hex){
-		var hexL = hex.length;
-		var dec = 0;
-		for(i=0;i<hexL;i++){
-			var hexPow = Math.pow(16,hexL-i-1);
-			var daHex = hex.substr(i,1)
-			switch(daHex.toUpperCase()){
-				case "A" : dec += 10*hexPow;break;
-				case "B" : dec += 11*hexPow;break;
-				case "C" : dec += 12*hexPow;break;
-				case "D" : dec += 13*hexPow;break;
-				case "E" : dec += 14*hexPow;break;
-				case "F" : dec += 15*hexPow;break;
-				default : dec += eval(daHex)*hexPow;break;
-			};
-		}
+		dec = parseInt(hex,16);
 		return dec;
 	}
 	

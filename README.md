@@ -5,7 +5,7 @@ Flippy is a cross-browser flip effect plugin for jQuery which allows you to flip
 Options
 -------
 
-  * color_target : The targeted background color. (ex.: ‘aliceblue’ or ‘#f0f8ff’ | default: ‘white’)
+  * color_target : The targeted background color. (ex.: ‘aliceblue’, ‘#f0f8ff’ or rgba(33,133,197,.3) | default: ‘white’)
   * content : The content to show after the flip effect, HTML or jQuery objects.
   * direction : The direction of the flip effect (‘RIGHT’, ‘LEFT’, ‘BOTTOM’, ‘TOP’ | default : ‘LEFT’)
   * duration : How long the flip effect is during in ms (default : 300).
