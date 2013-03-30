@@ -4,9 +4,11 @@ FLIPPY jQuery plugin (http://guilhemmarty.com/flippy)
 
 @author : Guilhem MARTY (bonjour@guilhemmarty.com)
 
-@version: 1.0.2
+@version: 1.0.3
 
 @changelog:
+Mar 30 2013 - v1.0.3 : bug fix on IE8/IE9 with explorerCanvas + add multiple simultaneous flippy animations
+
 Mar 17 2013 - v1.0.2 : bug fix with IE10+. Can use rgba in color and color target
 
 Feb 11 2012 - v1.0.1 : bug fix with IE9
@@ -15,27 +17,7 @@ Feb 11 2012 - v1.0 : First release
 
 */
 
-
-/*
-
-FLIPPY jQuery plugin (http://guilhemmarty.com/flippy)
-
-@author : Guilhem MARTY (bonjour@guilhemmarty.com)
-
-@version: 1.0
-
-@changelog:
-
-Feb 11 2012 - v1.0.1 : bug fix with IE9
-
-Feb 11 2012 - v1.0 : First release
-
-*/
-
-
 (function($){
-	var _Ang , _Step_ang , _Refresh_rate , _Depth , _W , _H , _nW , _nH , _cv_W, _cv_H, _CenterX , _CenterY , _Color , _Color_target , _Light , _Content , _Direction , _Midway , $this , _After, _Active;
-	
 	var _ColorsRef = {
 		'aliceblue':'#f0f8ff',
 		'antiquewhite':'#faebd7',
@@ -187,130 +169,129 @@ Feb 11 2012 - v1.0 : First release
 	};
 	
 	$.fn.flippy = function(opts){
-		if(!_Active){
-			opts = $.extend({
-				active_class:"flippy-active",
-				step_ang:10,
-				refresh_rate:15,
-				duration:300,
-				depth:0.12,
-				color_target:"white",
-				light:60,
-				content:"",
-				direction:"LEFT",
-				onStart:function(){},
-				onMidway:function(){},
-				onFinish:function(){}
-			}, opts);
-			_Active_class="flippy-active";
-			_Active = (_Active)? _Active : '';
-			_Ang = 0;
-			_Step_ang = (opts.refresh_rate/opts.duration)*200;
-			_Refresh_rate = opts.refresh_rate;
-			_Depth = opts.depth;
-			_W = '';
-			_H = '';
-			_nW = '';
-			_nH = '';
-			_CenterX = (_CenterX != '')? _CenterX : '';
-			_CenterY = (_CenterY != '')? _CenterY : '';
-			_Color = (_Color != '')? _Color : '';
-			_Color_target_is_rgba = (opts.color_target.substr(0,5) == "rgba(");
-			_Color_target_alpha = (_Color_target_is_rgba)? eval(opts.color_target.substr(3,opts.color_target.length-4).split(',')[3]) : 1;
-			_Color_target = convertColor(opts.color_target);
-			_Direction = opts.direction;
-			_Light = opts.light;
-			_Content = opts.content;
-			_Before = opts.onStart;
-			_Midway = opts.onMidway;
-			_After = opts.onFinish;
-			_isIE = (navigator.appName == "Microsoft Internet Explorer");
-			_isIE9orHigher = !(navigator.appVersion in new Array("6.0","7.0","8.0"));
-			_Container = null;
-			var _i = 1;
-			return this.each(function(){
-				_Container = $this = $(this);
-				_nW = $this.width();
-				_nH = $this.height();
-				_W = $this.outerWidth();
-				_H = $this.outerHeight();
-				_Active = true;
-				_Before();
-				_Content = (typeof _Content == "object") ? _Content.html() : _Content;
-				_Color = $this.css("background-color");
-				_Color_alpha = (_Color.substr(0,5) == "rgba(")? eval(_Color.substr(3,_Color.length-4).split(',')[3]) : 1;
-				_Color = convertColor(_Color);
-				$this
-					.empty()
-					.data("color",$this.css("background-color"))
-					.css({
-						 "opacity":_Color_alpha,
-						 "background":"none",
-						 "position":"relative",
-						 "overflow":"visible"
-					});
-					
-					switch(_Direction){
-						case "TOP":
-							_CenterX = (Math.sin(Math.PI/2)*_nW*_Depth);
-							_CenterY = _H/2;
-							var cv_pattern = '<canvas id="flippy" width="'+(_W+(2*_CenterX))+'" height="'+_H+'"></canvas>';
-							new_flippy(cv_pattern);
-							$this.find("#flippy")
-								.css({
-									 "position":"absolute",
-									 "top":"0",
-									 "left":"-"+_CenterX+"px"
-								});
-						break;
-						case "BOTTOM":
-							_CenterX = (Math.sin(Math.PI/2)*_nW*_Depth);
-							_CenterY = _H/2;
-							var cv_pattern = '<canvas id="flippy" width="'+(_W+(2*_CenterX))+'" height="'+_H+'"></canvas>';
-							new_flippy(cv_pattern);
-							$this.find("#flippy")
-								.css({
-									 "position":"absolute",
-									 "top":"0",
-									 "left":"-"+_CenterX+"px"
-								});
-						break;
-						case "LEFT":
-							_CenterY = (Math.sin(Math.PI/2)*_nH*_Depth);
-							_CenterX = _W/2;
-							var cv_pattern = '<canvas id="flippy" width="'+_W+'" height="'+(_H+(2*_CenterY))+'"></canvas>';
-							new_flippy(cv_pattern);
-							$this.find("#flippy")
-								.css({
-									 "position":"absolute",
-									 "top":"-"+_CenterY+"px",
-									 "left":"0"
-								});
-						break;
-						case "RIGHT":
-							_CenterY = (Math.sin(Math.PI/2)*_nH*_Depth);
-							_CenterX = _W/2;
-							var cv_pattern = '<canvas id="flippy" width="'+_W+'" height="'+(_H+(2*_CenterY))+'"></canvas>';
-							new_flippy(cv_pattern);
-							$this.find("#flippy")
-								.css({
-									 "position":"absolute",
-									 "top":"-"+_CenterY+"px",
-									 "left":"0"
-								});
-						break;
-					}
-				drawFlippy($(this));
-			});
-		}
+		
+		opts = $.extend({
+			step_ang:10,
+			refresh_rate:15,
+			duration:300,
+			depth:0.12,
+			color_target:"white",
+			light:60,
+			content:"",
+			direction:"LEFT",
+			onStart:function(){},
+			onMidway:function(){},
+			onFinish:function(){}
+		}, opts);
+		_isIE = (navigator.appName == "Microsoft Internet Explorer");
+		_Support_Canvas = window.HTMLCanvasElement;
+		_Container = null;
+		var _i = 1;
+		return this.each(function(){
+    		_Container = $this = $(this);
+			if(!$this.hasClass("flippy_active")){
+    			_Color_target_is_rgba = (opts.color_target.substr(0,5) == "rgba(");
+    			_Color = $this.css("background-color");
+    			var _FP = {
+        			"_Ang"                  : 0,
+        			"_Step_ang"             : (opts.refresh_rate/opts.duration)*200,
+        			"_Refresh_rate"         : opts.refresh_rate,
+        			"_Depth"                : opts.depth,
+        			"_CenterX"              : '',
+        			"_CenterY"              : '',
+        			"_Color"                : convertColor(_Color),
+        			"_Color_target_is_rgba" : _Color_target_is_rgba,
+        			"_Color_target_alpha"   : (_Color_target_is_rgba)? eval(opts.color_target.substr(3,opts.color_target.length-4).split(',')[3]) : 1,
+        			"_Color_alpha"          : (_Color.substr(0,5) == "rgba(")? eval(_Color.substr(3,_Color.length-4).split(',')[3]) : 1,
+        			"_Color_target"         : convertColor(opts.color_target),
+        			"_Direction"            : opts.direction,
+        			"_Light"                : opts.light,
+        			"_Content"              : (typeof opts.content == "object") ? opts.ontent.html() : opts.content,
+        			"_Before"               : opts.onStart,
+        			"_Midway"               : opts.onMidway,
+        			"_After"                : opts.onFinish,
+        			"_nW"                   : $this.width(),
+        			"_nH"                   : $this.height(),
+        			"_W"                    : $this.outerWidth(),
+        			"_H"                    : $this.outerHeight()
+    			};
+    			_UID = Math.floor(Math.random()* 1000000);
+    			_FP._Before();
+    			$this
+    			    .data('_UID',_UID)
+    			    .addClass('flippy_active')
+    				.empty()
+    				.css({
+    					 "opacity":_FP._Color_alpha,
+    					 "background":"none",
+    					 "position":"relative",
+    					 "overflow":"visible"
+    				});
+    				
+    				switch(_FP._Direction){
+    					case "TOP":
+    						_FP._CenterX = (Math.sin(Math.PI/2)*_FP._nW*_FP._Depth);
+    						_FP._CenterY = _FP._H/2;
+    						var cv_pattern = '<canvas id="flippy'+_UID+'" class="flippy" width="'+(_FP._W+(2*_FP._CenterX))+'" height="'+_FP._H+'"></canvas>';
+    						new_flippy(cv_pattern,_UID);
+    						$this.find("#flippy"+_UID)
+    							.css({
+    								 "position":"absolute",
+    								 "top":"0",
+    								 "left":"-"+_FP._CenterX+"px"
+    							});
+    					break;
+    					case "BOTTOM":
+    						_FP._CenterX = (Math.sin(Math.PI/2)*_FP._nW*_FP._Depth);
+    						_FP._CenterY = _FP._H/2;
+    						var cv_pattern = '<canvas id="flippy'+_UID+'" class="flippy" width="'+(_FP._W+(2*_FP._CenterX))+'" height="'+_FP._H+'"></canvas>';
+    						new_flippy(cv_pattern,_UID);
+    						$this.find("#flippy"+_UID)
+    							.css({
+    								 "position":"absolute",
+    								 "top":"0",
+    								 "left":"-"+_FP._CenterX+"px"
+    							});
+    					break;
+    					case "LEFT":
+    						_FP._CenterY = (Math.sin(Math.PI/2)*_FP._nH*_FP._Depth);
+    						_FP._CenterX = _FP._W/2;
+    						var cv_pattern = '<canvas id="flippy'+_UID+'" class="flippy" width="'+_FP._W+'" height="'+(_FP._H+(2*_FP._CenterY))+'"></canvas>';
+    						new_flippy(cv_pattern,_UID);
+    						$this.find("#flippy"+_UID)
+    							.css({
+    								 "position":"absolute",
+    								 "top":"-"+_FP._CenterY+"px",
+    								 "left":"0"
+    							});
+    					break;
+    					case "RIGHT":
+    						_FP._CenterY = (Math.sin(Math.PI/2)*_FP._nH*_FP._Depth);
+    						_FP._CenterX = _FP._W/2;
+    						var cv_pattern = '<canvas id="flippy'+_UID+'" class="flippy" width="'+_FP._W+'" height="'+(_FP._H+(2*_FP._CenterY))+'"></canvas>';
+    						new_flippy(cv_pattern,_UID);
+    						$this.find("#flippy"+_UID)
+    							.css({
+    								 "position":"absolute",
+    								 "top":"-"+_FP._CenterY+"px",
+    								 "left":"0"
+    							});
+    					break;
+    				}
+    			$this.data("flippy_FP",_FP);
+    			drawFlippy($(this));
+            }
+		});
+		
 	}
 	
-	function new_flippy(cv_pattern){
-		if(_isIE && !_isIE9orHigher){
-			if($this.attr('id') == ""){
-				$this.attr("id","flippy_container");
-			}
-			var $that = document.getElementById($this.attr('id'));
+	function new_flippy(cv_pattern,_UID){
+		if(_isIE && !_Support_Canvas){
+    		
+    		$this
+    		  .addClass("flippy_container")
+    		  .attr("id","flippy_container"+_UID);
+			var $that = document.getElementById("flippy_container"+_UID);
 			var cv = document.createElement(cv_pattern);
 			
 			$that.appendChild(cv);
@@ -319,84 +300,86 @@ Feb 11 2012 - v1.0 : First release
 		}
 	}
 	
-	function drawFlippy(){
-		_Ang += _Step_ang;
-		
-		if(_Ang > 90 && _Ang <= (90+_Step_ang)){
-			_Midway();
-			_Container.css({"opacity":_Color_target_alpha});
+	function drawFlippy($t){
+    	var _FP = $t.data("flippy_FP");
+		_FP._Ang += _FP._Step_ang;
+		_UID = $t.data("_UID");
+		if(_FP._Ang > 90 && _FP._Ang <= (90+_FP._Step_ang)){
+			_FP._Midway();
+			$t.css({"opacity":_FP._Color_target_alpha});
 		}
-		_Ang = (_Ang > (180+_Step_ang)) ? _Ang-(180+_Step_ang) : _Ang;
+		_FP._Ang = (_FP._Ang > (180+_FP._Step_ang)) ? _FP._Ang-(180+_FP._Step_ang) : _FP._Ang;
 		var PI = Math.PI
-		var rad = (_Ang/180)*PI;
+		var rad = (_FP._Ang/180)*PI;
 		
-		var canvas = document.getElementById("flippy");
-		if(_isIE && !_isIE9orHigher){G_vmlCanvasManager.initElement(canvas);}
+		var canvas = document.getElementById("flippy"+_UID);
+		if(canvas == null){ return; }
+		if(_isIE && !_Support_Canvas){ G_vmlCanvasManager.initElement(canvas);}
 		var ctx = canvas.getContext("2d");
-		ctx.clearRect(0, 0, _W+(2*_CenterX), _H+(2*_CenterY));
+		ctx.clearRect(0, 0, _FP._W+(2*_FP._CenterX), _FP._H+(2*_FP._CenterY));
 		ctx.beginPath();
-		var deltaH = Math.sin(rad)*_H*_Depth;
-		var deltaW = Math.sin(rad)*_W*_Depth;
+		var deltaH = Math.sin(rad)*_FP._H*_FP._Depth;
+		var deltaW = Math.sin(rad)*_FP._W*_FP._Depth;
 		
-		switch(_Direction){
+		switch(_FP._Direction){
 			case "LEFT" :
-				var X = Math.cos(rad)*(_W/2);
-				ctx.fillStyle = (_Ang > 90) ? changeColor(_Color_target,Math.floor(Math.sin(rad)*_Light)) : changeColor(_Color,-Math.floor(Math.sin(rad)*_Light));
-				ctx.moveTo(_CenterX-X,_CenterY+deltaH);//TL
-				ctx.lineTo(_CenterX+X,_CenterY-deltaH);//TR
-				ctx.lineTo(_CenterX+X,_CenterY+_H+deltaH);//BR
-				ctx.lineTo(_CenterX-X,_CenterY+_H-deltaH);//BL
-				ctx.lineTo(_CenterX-X,_CenterY);//loop
+				var X = Math.cos(rad)*(_FP._W/2);
+				ctx.fillStyle = (_FP._Ang > 90) ? changeColor(_FP._Color_target,Math.floor(Math.sin(rad)*_FP._Light)) : changeColor(_FP._Color,-Math.floor(Math.sin(rad)*_FP._Light));
+				ctx.moveTo(_FP._CenterX-X,_FP._CenterY+deltaH);//TL
+				ctx.lineTo(_FP._CenterX+X,_FP._CenterY-deltaH);//TR
+				ctx.lineTo(_FP._CenterX+X,_FP._CenterY+_FP._H+deltaH);//BR
+				ctx.lineTo(_FP._CenterX-X,_FP._CenterY+_FP._H-deltaH);//BL
+				ctx.lineTo(_FP._CenterX-X,_FP._CenterY);//loop
 				ctx.fill();
 			break;
 			case "RIGHT" :
-				var X = Math.cos(rad)*(_W/2);
-				ctx.fillStyle = (_Ang > 90) ? changeColor(_Color_target,-Math.floor(Math.sin(rad)*_Light)) : changeColor(_Color,Math.floor(Math.sin(rad)*_Light));
-				ctx.moveTo(_CenterX+X,_CenterY+deltaH);//TL
-				ctx.lineTo(_CenterX-X,_CenterY-deltaH);//TR
-				ctx.lineTo(_CenterX-X,_CenterY+_H+deltaH);//BR
-				ctx.lineTo(_CenterX+X,_CenterY+_H-deltaH);//BL
-				ctx.lineTo(_CenterX+X,_CenterY);//loop
+				var X = Math.cos(rad)*(_FP._W/2);
+				ctx.fillStyle = (_FP._Ang > 90) ? changeColor(_FP._Color_target,-Math.floor(Math.sin(rad)*_FP._Light)) : changeColor(_FP._Color,Math.floor(Math.sin(rad)*_FP._Light));
+				ctx.moveTo(_FP._CenterX+X,_FP._CenterY+deltaH);//TL
+				ctx.lineTo(_FP._CenterX-X,_FP._CenterY-deltaH);//TR
+				ctx.lineTo(_FP._CenterX-X,_FP._CenterY+_FP._H+deltaH);//BR
+				ctx.lineTo(_FP._CenterX+X,_FP._CenterY+_FP._H-deltaH);//BL
+				ctx.lineTo(_FP._CenterX+X,_FP._CenterY);//loop
 				ctx.fill();
 			break;
 			case "TOP" :
-				var Y = Math.cos(rad)*(_H/2);
-				ctx.fillStyle = (_Ang > 90) ? changeColor(_Color_target,-Math.floor(Math.sin(rad)*_Light)) : changeColor(_Color,Math.floor(Math.sin(rad)*_Light));
-				ctx.moveTo(_CenterX+deltaW,_CenterY-Y);//TL
-				ctx.lineTo(_CenterX-deltaW,_CenterY+Y);//TR
-				ctx.lineTo(_CenterX+_W+deltaW,_CenterY+Y);//BR
-				ctx.lineTo(_CenterX+_W-deltaW,_CenterY-Y);//BL
-				ctx.lineTo(_CenterX,_CenterY-Y);//loop
+				var Y = Math.cos(rad)*(_FP._H/2);
+				ctx.fillStyle = (_FP._Ang > 90) ? changeColor(_FP._Color_target,-Math.floor(Math.sin(rad)*_FP._Light)) : changeColor(_FP._Color,Math.floor(Math.sin(rad)*_FP._Light));
+				ctx.moveTo(_FP._CenterX+deltaW,_FP._CenterY-Y);//TL
+				ctx.lineTo(_FP._CenterX-deltaW,_FP._CenterY+Y);//TR
+				ctx.lineTo(_FP._CenterX+_FP._W+deltaW,_FP._CenterY+Y);//BR
+				ctx.lineTo(_FP._CenterX+_FP._W-deltaW,_FP._CenterY-Y);//BL
+				ctx.lineTo(_FP._CenterX,_FP._CenterY-Y);//loop
 				ctx.fill();
 			break;
 			case "BOTTOM" :
-				var Y = Math.cos(rad)*(_H/2);
-				ctx.fillStyle = (_Ang > 90) ? changeColor(_Color_target,Math.floor(Math.sin(rad)*_Light)) : changeColor(_Color,-Math.floor(Math.sin(rad)*_Light));
-				ctx.moveTo(_CenterX+deltaW,_CenterY+Y);//TL
-				ctx.lineTo(_CenterX-deltaW,_CenterY-Y);//TR
-				ctx.lineTo(_CenterX+_W+deltaW,_CenterY-Y);//BR
-				ctx.lineTo(_CenterX+_W-deltaW,_CenterY+Y);//BL
-				ctx.lineTo(_CenterX,_CenterY+Y);//loop
+				var Y = Math.cos(rad)*(_FP._H/2);
+				ctx.fillStyle = (_FP._Ang > 90) ? changeColor(_FP._Color_target,Math.floor(Math.sin(rad)*_FP._Light)) : changeColor(_FP._Color,-Math.floor(Math.sin(rad)*_FP._Light));
+				ctx.moveTo(_FP._CenterX+deltaW,_FP._CenterY+Y);//TL
+				ctx.lineTo(_FP._CenterX-deltaW,_FP._CenterY-Y);//TR
+				ctx.lineTo(_FP._CenterX+_FP._W+deltaW,_FP._CenterY-Y);//BR
+				ctx.lineTo(_FP._CenterX+_FP._W-deltaW,_FP._CenterY+Y);//BL
+				ctx.lineTo(_FP._CenterX,_FP._CenterY+Y);//loop
 				ctx.fill();
 			break;
 		}
 		
-		if(_Ang < 180){
-			setTimeout(drawFlippy,_Refresh_rate);
+		if(_FP._Ang < 180){
+			setTimeout(function(){ drawFlippy($t) },_FP._Refresh_rate);
 		}else{
-			_Active = null;
-			$this
+			$t
+				.removeClass("flippy_active")
 				.css({
-					 "background":_Color_target
+					 "background":_FP._Color_target
 				})
-				.append(_Content)
-				.find("#flippy")
+				.append(_FP._Content)
+				.removeClass("flippy_container")
+				.find(".flippy")
 					.remove();
-				if($this.attr("id") == "flippy_container"){
-					$this.attr("id","");
-				}
-			_After();
+				
+			_FP._After();
 		}
+		$t.data("flippy_FP",_FP);
 	}
 	
 	function convertColor(thecolor){
