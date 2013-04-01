@@ -206,7 +206,7 @@ Feb 11 2012 - v1.0 : First release
         			"_Color_target"         : convertColor(opts.color_target),
         			"_Direction"            : opts.direction,
         			"_Light"                : opts.light,
-        			"_Content"              : (typeof opts.content == "object") ? opts.ontent.html() : opts.content,
+        			"_Content"              : (typeof opts.content == "object") ? opts.content.html() : opts.content,
         			"_Before"               : opts.onStart,
         			"_Midway"               : opts.onMidway,
         			"_After"                : opts.onFinish,
