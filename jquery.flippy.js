@@ -8,6 +8,8 @@ Released under MIT Licence (http://www.opensource.org/licenses/MIT)
 @version: 1.1
 
 @changelog:
+Apr 06 2013 - v1.2 : can now use CSS3 transform property for better visual result in modern web browsers
+
 Apr 03 2013 - v1.1 : code cleanup (Object Oriented) + add Revert action + add onAnimation callback
 
 Mar 30 2013 - v1.0.3 : bug fix on IE8/IE9 with explorerCanvas + add multiple simultaneous flippy animations
@@ -169,9 +171,39 @@ Feb 11 2012 - v1.0 : First release
         'yellow':'#ffff00',
         'yellowgreen':'#9acd32'
     };
-
+    
+    function detect_CSS3Support()
+    {
+        $("document").ready(function()
+        {
+            var Fel = document.createElement('p'),
+            support_css3,
+            transforms = {
+                'webkitTransform':'-webkit-transform',
+                'OTransform':'-o-transform',
+                'msTransform':'-ms-transform',
+                'MozTransform':'-moz-transform',
+                'transform':'transform'
+            };
+            document.body.appendChild(Fel);
+         
+            for(var t in transforms){
+                if( Fel.style[t] !== undefined ){
+                    Fel.style[t] = 'rotateX(1deg)';
+                    support_css3 = window.getComputedStyle(Fel).getPropertyValue(transforms[t]);
+                }
+            }
+         
+            document.body.removeChild(Fel);
+         
+            _Support_CSS3 = (support_css3 !== undefined && support_css3.length > 0 && support_css3 !== "none");
+        });
+    }
+    
     var _isIE = (navigator.appName == "Microsoft Internet Explorer");
     var _Support_Canvas = window.HTMLCanvasElement;
+    var _Support_CSS3 = null;
+    detect_CSS3Support();
     var PI = Math.PI;
     
     //! Class flipBox
@@ -206,16 +238,131 @@ Feb 11 2012 - v1.0 : First release
                 }
             }
             
-            //! run animation
-            this.initiateFlippy();
-            this.cvO = document.getElementById("flippy"+this._UID);
-            var that = this;
-            this.jO.data("_oFlippy_",this);
-            this._Int = setInterval(function(){ that.drawFlippy(); }, this._Refresh_rate);
+            if(this._noCSS || !_Support_CSS3){
+                //! run canvas animation
+                this.initiateFlippy();
+                this.cvO = document.getElementById("flippy"+this._UID);
+                var that = this;
+                this.jO.data("_oFlippy_",this);
+                this._Int = setInterval(function(){ that.drawFlippy(); }, this._Refresh_rate);
+            }else{
+                //! run CSS3 animation
+                this.jO
+                    .addClass('flippy_active')
+                    .parent()
+                        .css({
+                            "perspective":this._nW+"px"
+                        });
+                var that = this;
+                this.jO.data("_oFlippy_",this);
+                this._Int = setInterval(function(){ that.drawFlippyCSS(); }, this._Refresh_rate);
+            }
+            
         };
         
-        //! private methods
+        /**
+         * Refresh CSS3 fliped element
+         * @return void
+         */
+        this.drawFlippyCSS = function()
+        {
+            this._Ang = (this._Direction == "RIGHT" || this._Direction == "TOP") ? this._Ang + this._Step_ang : this._Ang - this._Step_ang;
+            _Axis = (this._Direction == "RIGHT" || this._Direction == "LEFT") ? "Y" : "X" ;
+            
+            if( 
+                ( (this._Direction == "RIGHT" || this._Direction == "TOP") && this._Ang > 90 && this._Ang <= (90+this._Step_ang)) ||
+                ( (this._Direction == "LEFT" || this._Direction == "BOTTOM") && this._Ang < -90 && this._Ang >= (-90-this._Step_ang))
+            ){
+                this._Midway();
+                this.jO
+                        .css({
+                            "opacity":this._Color_target_alpha,
+                            "background":this._Color_target,
+                        })
+                        .empty()
+                        .append(this._Verso);
+                        
+                this._Ang = (this._Direction == "RIGHT" || this._Direction == "TOP") ? -90 : 90 ;
+                this._Half = true;
+            }
+            
+            if(this._Direction == "RIGHT" || this._Direction == "TOP"){
+                this._Ang = (this._Ang > (this._Step_ang) && this._Half) ? this._Ang-(this._Step_ang) : this._Ang;
+            }else{
+                this._Ang = (this._Ang < (-this._Step_ang) && this._Half) ? this._Ang+(this._Step_ang) : this._Ang;
+            }
+            
+            if(
+                ((this._Direction == "RIGHT" || this._Direction == "TOP") && this._Ang > 0 && this._Half) ||
+                ((this._Direction == "LEFT" || this._Direction == "BOTTOM") && this._Ang < 0 && this._Half)
+            ){
+                this.jO
+                    .removeClass("flippy_active")
+                    .css({
+                        "-webkit-transform": "rotate"+_Axis+"(0deg)",
+                        "-moz-transform": "rotate"+_Axis+"(0deg)",
+                        "-o-transform": "rotate"+_Axis+"(0deg)",
+                        "-ms-transform": "rotate"+_Axis+"(0deg)",
+                        "transform": "rotate"+_Axis+"(0deg)"
+                    })
+                    .find(".flippy_light")
+                        .remove();    
+                        
+                clearInterval(this._Int);
+                this._Half = false;
+                this._After();
+                
+                //! End animation
+                return;
+            }else{
+                this.jO.css({
+                    "-webkit-transform": "rotate"+_Axis+"("+this._Ang+"deg)",
+                    "-moz-transform": "rotate"+_Axis+"("+this._Ang+"deg)",
+                    "-o-transform": "rotate"+_Axis+"("+this._Ang+"deg)",
+                    "-ms-transform": "rotate"+_Axis+"("+this._Ang+"deg)",
+                    "transform": "rotate"+_Axis+"("+this._Ang+"deg)"
+                });
+            }
+            
+            this.applyLight();
+            
+            
+        };
         
+        /**
+         * Apply light to CSS flipped element
+         * @return void
+         */
+        this.applyLight = function()
+        {
+            if(this.jO.find(".flippy_light").size() === 0){
+                this
+                    .jO
+                    .append('<div class="flippy_light"></div>')
+                    .find(".flippy_light")
+                        .css({
+                            "position":"absolute",
+                            "top":"0",
+                            "left":"0",
+                            "min-width":this._nW+"px",
+                            "min-height":this._nH+"px",
+                            "width":this._nW+"px",
+                            "height":this._nH+"px",
+                            "background-color":((this._Direction == "LEFT"  && this._Half) || (this._Direction == "RIGHT"  && !this._Half) || (this._Direction == "TOP"  && this._Half) || (this._Direction == "BOTTOM"  && !this._Half))? "#000" : "#FFF",
+                            "opacity":(Math.abs(this._Ang)*this._Light/90)/100
+                        });
+            }else{
+                this
+                    .jO
+                    .find(".flippy_light")
+                        .css({
+                            "background-color":((this._Direction == "LEFT"  && this._Half) || (this._Direction == "RIGHT"  && !this._Half) || (this._Direction == "TOP"  && this._Half) || (this._Direction == "BOTTOM"  && !this._Half))? "#000" : "#FFF",
+                            "opacity":(Math.abs(this._Ang)*this._Light/90)/100
+                        });
+            };
+            
+        };
+    
         /**
          * Create the flippy canvas
          * @return void
@@ -296,6 +443,7 @@ Feb 11 2012 - v1.0 : First release
                 this.jO.css({"opacity":this._Color_target_alpha});
             }
             this._Ang = (this._Ang > (180+this._Step_ang)) ? this._Ang-(180+this._Step_ang) : this._Ang;
+            
             var rad = (this._Ang/180)*PI;
             
             if(this.cvO === null){ return; }
@@ -309,7 +457,7 @@ Feb 11 2012 - v1.0 : First release
             switch(this._Direction){
                 case "LEFT" :
                     var X = Math.cos(rad)*(this._W/2);
-                    ctx.fillStyle = (this._Ang > 90) ? this.changeColor(this._Color_target,Math.floor(Math.sin(rad)*this._Light)) : this.changeColor(this._Color,-Math.floor(Math.sin(rad)*this._Light));
+                    ctx.fillStyle = (this._Ang > 90) ?this.changeColor(this._Color_target,Math.floor(Math.sin(rad)*this._Light)) : this.changeColor(this._Color,-Math.floor(Math.sin(rad)*this._Light));
                     ctx.moveTo(this._CenterX-X,this._CenterY+deltaH);//TL
                     ctx.lineTo(this._CenterX+X,this._CenterY-deltaH);//TR
                     ctx.lineTo(this._CenterX+X,this._CenterY+this._H+deltaH);//BR
@@ -479,7 +627,6 @@ Feb 11 2012 - v1.0 : First release
             redHex = (redDec <= 0) ? "00" : this.toHex(redDec);
             greenHex = (greenDec <= 0) ? "00" : this.toHex(greenDec);
             blueHex = (blueDec <= 0) ? "00" : this.toHex(blueDec);
-            
             return "#"+redHex+greenHex+blueHex;
         };
         
@@ -493,6 +640,7 @@ Feb 11 2012 - v1.0 : First release
             light:60,
             content:"",
             direction:"LEFT",
+            noCSS:false,
             onStart:function(){},
             onMidway:function(){},
             onAnimation:function(){},
@@ -500,9 +648,10 @@ Feb 11 2012 - v1.0 : First release
         }, opts);
         
         //this._Int;
-        
+        this._Half = false;
         this._UID = Math.floor(Math.random()* 1000000);
         this.jO = $jO;
+        this._noCSS = opts.noCSS;
         //this.cvO;
         
         this._Ang = 0;

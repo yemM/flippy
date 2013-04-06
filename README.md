@@ -3,10 +3,11 @@ Flippy jQuery Plugin
 
 Demo
 ----
-[Demo](http://guilhemmarty.com/flippy/)
+[view the Demo](http://guilhemmarty.com/flippy/)
 
 Features
 --------
+  * Use CSS3 transform option when the browser supports it
   * Animate multiple element simultaneously
   * Revert the last flip animation with $('#myElement').flippyReverse();
   * Multiple callback on start, half way, during the animation and when finished
@@ -23,6 +24,7 @@ Options
   * duration : How long the flip effect is during in ms (default : 300)
   * depth : You can adjust the perspective effect (default : 0.12)
   * light : You can adjust light and shadow intensity (default : 60)
+  * noCSS : You can force Flippy to NOT use CSS3 properties even if the browser support it (default : false)
   * onStart : The function triggered before the animation start
   * onMidway : The function triggered at half animation
   * onAnimation : The function triggered each time the Flippy is refreshed
