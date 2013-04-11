@@ -207,7 +207,7 @@ Feb 11 2012 - v1.0 : First release
     var PI = Math.PI;
     
     //! Class flipBox
-    var flipBox = function($jO,opts)
+    var flipBox = function($jO,opts, undefined)
     {    
         //! public methods
         
@@ -242,20 +242,18 @@ Feb 11 2012 - v1.0 : First release
                 //! run canvas animation
                 this.initiateFlippy();
                 this.cvO = document.getElementById("flippy"+this._UID);
-                var that = this;
                 this.jO.data("_oFlippy_",this);
-                this._Int = setInterval(function(){ that.drawFlippy(); }, this._Refresh_rate);
+                this._Int = setInterval($.proxy(this.drawFlippy, this), this._Refresh_rate);
             }else{
                 //! run CSS3 animation
                 this.jO
                     .addClass('flippy_active')
                     .parent()
                         .css({
-                            "perspective":this._nW+"px"
+                            "perspective": Math.floor(this._Depth * this._nW) +"px"
                         });
-                var that = this;
                 this.jO.data("_oFlippy_",this);
-                this._Int = setInterval(function(){ that.drawFlippyCSS(); }, this._Refresh_rate);
+                this._Int = setInterval($.proxy(this.drawFlippyCSS, this), this._Refresh_rate);
             }
             
         };
@@ -267,7 +265,7 @@ Feb 11 2012 - v1.0 : First release
         this.drawFlippyCSS = function()
         {
             this._Ang = (this._Direction == "RIGHT" || this._Direction == "TOP") ? this._Ang + this._Step_ang : this._Ang - this._Step_ang;
-            _Axis = (this._Direction == "RIGHT" || this._Direction == "LEFT") ? "Y" : "X" ;
+            var _Axis = (this._Direction == "RIGHT" || this._Direction == "LEFT") ? "Y" : "X" ;
             
             if( 
                 ( (this._Direction == "RIGHT" || this._Direction == "TOP") && this._Ang > 90 && this._Ang <= (90+this._Step_ang)) ||
@@ -277,7 +275,7 @@ Feb 11 2012 - v1.0 : First release
                 this.jO
                         .css({
                             "opacity":this._Color_target_alpha,
-                            "background":this._Color_target,
+                            "background":this._Color_target
                         })
                         .empty()
                         .append(this._Verso);
@@ -544,26 +542,26 @@ Feb 11 2012 - v1.0 : First release
          * @param string color
          * @return string Hex color code
          */ 
-        this.convertColor = function(thecolor)
+        this.convertColor = function(color)
         {
-            try{
-                thecolor = (eval('_ColorsRef.'+thecolor) !== null)? eval('_ColorsRef.'+thecolor) : thecolor;
-            }catch(err){
+	        var thecolor = _ColorsRef.hasOwnProperty(color) ? _ColorsRef[color] : color;
                 
-            }
+	        if (/^transparent$/i.test(thecolor))
+	            return '#ffffff';
         
             if(thecolor.substr(0,4) == "rgb("){
-                thecolor = "#"
-                    +this.toHex(eval(thecolor.substr(4,thecolor.length).split(',')[0]))
-                    +this.toHex(eval(thecolor.substr(3,thecolor.length).split(',')[1]))
-                    +this.toHex(eval(thecolor.substr(3,thecolor.length-4).split(',')[2]));
+                return [
+	                "#",
+	                 this.toHex(thecolor.substr(4,thecolor.length).split(',')[0]  >>> 0),
+	                 this.toHex(thecolor.substr(3,thecolor.length).split(',')[1] >>> 0),
+	                 this.toHex(thecolor.substr(3,thecolor.length-4).split(',')[2] >>> 0)].join('');
             }
     
             if(thecolor.substr(0,5) == "rgba("){
-                thecolor = "#"
-                    +this.toHex(eval(thecolor.substr(5,thecolor.length).split(',')[0]))
-                    +this.toHex(eval(thecolor.substr(3,thecolor.length).split(',')[1]))
-                    +this.toHex(eval(thecolor.substr(3,thecolor.length-4).split(',')[2]));
+                return ["#",
+                    this.toHex(thecolor.substr(5,thecolor.length).split(',')[0] >>> 0),
+                    this.toHex(thecolor.substr(3,thecolor.length).split(',')[1] >>> 0),
+                    this.toHex(thecolor.substr(3,thecolor.length-4).split(',')[2] >>> 0)].join('');
             }
     
             return thecolor;
@@ -665,8 +663,8 @@ Feb 11 2012 - v1.0 : First release
         
         this._Color_target_is_rgba = (opts.color_target.substr(0,5) == "rgba(");
         this._Color = $jO.css("background-color");
-        this._Color_target_alpha = (this._Color_target_is_rgba)? eval(opts.color_target.substr(3,opts.color_target.length-4).split(',')[3]) : 1;
-        this._Color_alpha = (this._Color.substr(0,5) == "rgba(")? eval(this._Color.substr(3,this._Color.length-4).split(',')[3]) : 1;
+        this._Color_target_alpha = (this._Color_target_is_rgba)? opts.color_target.substr(3,opts.color_target.length-4).split(',')[3]  >>> 0   : 1;
+        this._Color_alpha = /^transparent$/i.test('' + this._Color) ? 0 : (this._Color.substr(0,5) == "rgba(")? this._Color.substr(3,this._Color.length-4).split(',')[3]  >>> 0 : 1;
         this._Color_target = this.convertColor(opts.color_target);
         this._Color = this.convertColor(this._Color);
         
