@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Flippy jQuery Plugin" />
+    <meta property="og:url" content="http://blog.guilhemmarty.com/flippy/" />
+    <meta property="og:description" content="Flippy is a cross-browser flip effect plugin for jQuery which allows you to flip all html element you want." />
+    
+    <meta property="og:site_name" content="Flippy jQuery plugin" />
+    <title>Flippy a jQuery flip effect plugin</title>
+    <link rel="author" href="https://plus.google.com/101329778121636072173"/>
+    <link rel="stylesheet" href="demo.css"/>
+    <link rel="stylesheet" href="css/shCore.css"/>
+    <link rel="stylesheet" href="css/shThemeRDark.css"/>
+</head>
+<body>
+    <div id="wrapper">
+        <h1>jQuery flip effect with Flippy</h1>
+        <div class="row">
+            <div class="flipbox-container box100">
+                <div id="flipbox1" class="flipbox">
+                    <span>Hello !</span>
+                </div>
+            </div>
+            
+            <ul id="action-btn">
+                <li><a class="btn" id="btn-left" href="#">Left</a></li>
+                <li><a class="btn" id="btn-right" href="#">Right</a></li>
+                <li><a class="btn" id="btn-top" href="#">Top</a></li>
+                <li><a class="btn" id="btn-bottom" href="#">Bottom</a></li>
+                <li><a class="btn" id="btn-reverse" href="#">Revert</a></li>
+                <br class="clear"/>
+            </ul>
+        </div>
+        
+        <h2>Markup</h2>
+        <p>First, add Flippy JS in your page. Be sure to have jQuery too !</p>
+        
+        <pre class="brush: xml">
+            <script src="js/jquery.min.js"></script>
+            <script type="text/javascript" src="js/jquery.flippy.js"></script>
+        </pre>
+        
+        <p>The Flippy content need to be included in a container, this prevents random perspective effects with CSS :</p>
+        
+        <pre class="brush: xml">
+            <div class="flipbox-container">
+            
+                <div class="flipbox">
+                    <span>Hello !</span>
+                </div>
+            
+            </div>
+        </pre>
+        
+        <p>Simply call flippy() function</p>
+        
+        <pre class="brush: js">
+            $(".flipbox").flippy({
+                color_target: "red",
+                duration: "500",
+                verso: "woohoo"
+             });
+        </pre>
+        
+        <p>If you want to reverse last flip, just use reverse() function.</p>
+        
+        <pre class="brush: js">
+            $(".flipbox").flippyReverse();
+        </pre>
+        
+        <h2>Options</h2>
+        
+        <ul>
+            <li><strong>color_target</strong> : The targeted background color. (ex.: ‘aliceblue’, ‘#f0f8ff’ or rgba(33,133,197,.3) | default: ‘white’)</li>
+            <li><strong>recto</strong> : The content to show after a revert() action (default : the original content)</li>
+            <li><strong>verso</strong> : The content to show after the flip effect</li>
+            <li><strong>direction</strong> : The direction of the flip effect (‘RIGHT’, ‘LEFT’, ‘BOTTOM’, ‘TOP’ | default : ‘LEFT’)</li>
+            <li><strong>duration</strong> : How long the flip effect is during in ms (default : 300)</li>
+            <li><strong>depth</strong> : You can adjust the perspective effect (default : 0.12)</li>
+            <li><strong>light</strong> : You can adjust light and shadow intensity (default : 60)</li>
+            <li><strong>noCSS</strong> : You can force Flippy to NOT use CSS3 properties even if the browser support it (default : false)</li>
+        </ul>
+        
+        <h2>Callbacks</h2>
+        
+        You can attach function to specific events. Add your function like that.
+        
+        <pre class="brush: js">
+            $(".flipbox").flippy({
+                color_target: "red",
+                duration: "500",
+                verso: "woohoo",
+                onStart: function(){
+                    // Your code here
+                }
+             });
+        </pre>
+        
+        <ul>
+            <li><strong>onStart</strong> : The function triggered before the animation start</li>
+            <li><strong>onMidway</strong> : The function triggered at half animation</li>
+            <li><strong>onAnimation</strong> : The function triggered each time the Flippy is refreshed</li>
+            <li><strong>onFinish</strong> : The function triggered after the animation finish</li>
+            <li><strong>onReverseStart</strong> : The function triggered before the reverse animation start</li>
+            <li><strong>onRevereseMidway</strong> : The function triggered at half of reverse animation</li>
+            <li><strong>onReverseAnimation</strong> : The function triggered each time the Flippy is refreshed while reversing</li>
+            <li><strong>onReverseFinish</strong> : The function triggered after the reverse animation finish</li>
+        </ul>
+        
+        <h2>Known issues</h2>
+        
+        <ul>
+            <li>The depth parameter has a strange effect when CSS rendering is used</li>
+        </ul>
+        
+        <h2>Cross browser ?</h2>
+
+        <p>The Flippy plugin works fine for every modern web browser except Internet Explorer 8 and before (of course…).
+        In this demo I used the excanvas.js file to allow the use of canvas in older IE versions. You can find it here.</p>
+        
+        <h2>Licence</h2>
+        
+        Released under the <a href="http://www.opensource.org/licenses/MIT">MIT license</a>        
+    </div>
+    <a href="https://github.com/lepixel/flippy"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub"></a>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <!--[if lt IE 9]>
+	<script src="js/excanvas.min.js" type="text/javascript"></script>
+	<![endif]-->
+    <script type="text/javascript" src="jquery.flippy.min.js"></script>
+    <script type="text/javascript" src="js/shCore.js"></script>
+    <script type="text/javascript" src="js/shBrushJScript.js"></script>
+    <script type="text/javascript" src="js/shBrushXml.js"></script>
+    <script type="text/javascript" src="demo.js"></script>
+</body>
+</html>

@@ -5,9 +5,12 @@
 
  @author : Guilhem MARTY (bonjour@guilhemmarty.com)
 
- @version: 1.1
+ @version: 1.3
 
  @changelog:
+ 
+ May 21 2013 - v1.3 : added revert callbacks, direction option is not case sensitive
+ 
  Apr 06 2013 - v1.2 : can now use CSS3 transform property for better visual result in modern web browsers
 
  Apr 03 2013 - v1.1 : code cleanup (Object Oriented) + add Revert action + add onAnimation callback
@@ -218,7 +221,7 @@
 		 */
 		this.animate = function(reversing)
 		{
-			this._Before();
+			if(reversing){ this._RBefore(); }else{ this._Before(); }
 
 			if(typeof reversing !== undefined && reversing){
 				var recto = this._Recto;
@@ -229,7 +232,9 @@
 
 				this._Verso = recto;
 				this._Color_target = this._Verso_color = recto_color;
-
+                
+                this._Reversing = true;
+                
 				switch(this._Direction){
 					case "TOP": this._Direction = "BOTTOM"; break;
 					case "BOTTOM": this._Direction = "TOP"; break;
@@ -250,7 +255,8 @@
 					.addClass('flippy_active')
 					.parent()
 					.css({
-						"perspective": Math.floor(this._Depth * this._nW) +"px"
+					    // ! perspective property setting is still buggy, so _Depth is inactive until a better solution is find
+						"perspective": this._nW+"px" // old version : Math.floor(this._Depth * this._nW) +"px"
 					});
 				this.jO.data("_oFlippy_",this);
 				this._Int = setInterval($.proxy(this.drawFlippyCSS, this), this._Refresh_rate);
@@ -271,7 +277,9 @@
 				( (this._Direction == "RIGHT" || this._Direction == "TOP") && this._Ang > 90 && this._Ang <= (90+this._Step_ang)) ||
 					( (this._Direction == "LEFT" || this._Direction == "BOTTOM") && this._Ang < -90 && this._Ang >= (-90-this._Step_ang))
 				){
-				this._Midway();
+				
+				if(this._Reversing){ this._RMidway() }else{ this._Midway(); }
+				
 				this.jO
 					.css({
 						"opacity":this._Color_target_alpha,
@@ -308,7 +316,7 @@
 
 				clearInterval(this._Int);
 				this._Half = false;
-				this._After();
+				if(this._Reversing){ this._RAfter() }else{ this._After() };
 
 				//! End animation
 				return;
@@ -324,7 +332,8 @@
 
 			this.applyLight();
 
-
+            if(this._Reversing){ this._RDuring(); }else{ this._During(); }
+            
 		};
 
 		/**
@@ -438,7 +447,7 @@
 		{
 			this._Ang += this._Step_ang;
 			if(this._Ang > 90 && this._Ang <= (90+this._Step_ang)){
-				this._Midway();
+				if(this._Reversing){ this._RMidway(); }else{ this._Midway(); }
 				this.jO.css({"opacity":this._Color_target_alpha});
 			}
 			this._Ang = (this._Ang > (180+this._Step_ang)) ? this._Ang-(180+this._Step_ang) : this._Ang;
@@ -509,13 +518,13 @@
 					.remove();
 
 				clearInterval(this._Int);
-				this._After();
+				if(this._Reversing){ this._RAfter(); }else{ this._After(); }
 
 				//! End animation
 				return;
 			}
 
-			this._During();
+			if(this._Reversing){ this._RDuring(); }else{ this._During(); }
 		};
 
 		/**
@@ -644,10 +653,15 @@
 			onStart:function(){},
 			onMidway:function(){},
 			onAnimation:function(){},
-			onFinish:function(){}
+			onFinish:function(){},
+			onReverseStart:function(){},
+			onReverseMidway:function(){},
+			onReverseAnimation:function(){},
+			onReverseFinish:function(){}
 		}, opts);
 
 		//this._Int;
+        this._Reversing = false;
 		this._Half = false;
 		this._UID = Math.floor(Math.random()* 1000000);
 		this.jO = $jO;
@@ -670,7 +684,7 @@
 		this._Color_target = this.convertColor(opts.color_target);
 		this._Color = this.convertColor(this._Color);
 
-		this._Direction = opts.direction;
+		this._Direction = opts.direction.toUpperCase();
 		this._Light = opts.light;
 
 		this._Content = (typeof opts.content == "object") ? opts.content.html() : opts.content;
@@ -683,6 +697,11 @@
 		this._During = opts.onAnimation;
 		this._Midway = opts.onMidway;
 		this._After = opts.onFinish;
+		
+		this._RBefore = opts.onReverseStart;
+		this._RDuring = opts.onReverseAnimation;
+		this._RMidway = opts.onReverseMidway;
+		this._RAfter = opts.onReverseFinish;
 
 		this._nW = this.jO.width();
 		this._nH = this.jO.height();

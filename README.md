@@ -29,6 +29,23 @@ Options
   * onMidway : The function triggered at half animation
   * onAnimation : The function triggered each time the Flippy is refreshed
   * onFinish : The function triggered after the animation finish
+  * onReverseStart : The function triggered before the animation start
+  * onReverseMidway : The function triggered at half animation
+  * onReverseAnimation : The function triggered each time the Flippy is refreshed
+  * onReverseFinish : The function triggered after the animation finish
+
+Markup
+------
+
+``` html
+<div class="flipbox-container">
+
+    <div id="myFlippyBox">
+        <span>Hello !</span>
+    </div>
+
+</div>
+```
 
 Example
 --------
