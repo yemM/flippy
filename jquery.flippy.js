@@ -5,9 +5,13 @@
 
  @author : Guilhem MARTY (bonjour@guilhemmarty.com)
 
- @version: 1.3
+ @version: 1.4
 
  @changelog:
+
+ January 23 2014 - v1.4: 
+ - Activated _Depth property.
+ - Added conditional to deactivate the "color_target" property
  
  May 21 2013 - v1.3 : added revert callbacks, direction option is not case sensitive
  
@@ -256,7 +260,8 @@
 					.parent()
 					.css({
 					    // ! perspective property setting is still buggy, so _Depth is inactive until a better solution is find
-						"perspective": this._nW+"px" // old version : Math.floor(this._Depth * this._nW) +"px"
+					    // Jesús Merino: I think that perspective is already working properly, so I have activated _Depth property
+						"perspective": Math.floor(this._Depth * this._nW) +"px"
 					});
 				this.jO.data("_oFlippy_",this);
 				this._Int = setInterval($.proxy(this.drawFlippyCSS, this), this._Refresh_rate);
@@ -677,12 +682,15 @@
 		//this._CenterX;
 		//this._CenterY;
 
-		this._Color_target_is_rgba = (opts.color_target.substr(0,5) == "rgba(");
-		this._Color = $jO.css("background-color");
-		this._Color_target_alpha = (this._Color_target_is_rgba)? opts.color_target.substr(3,opts.color_target.length-4).split(',')[3]  >>> 0   : 1;
-		this._Color_alpha = /^transparent$/i.test('' + this._Color) ? 0 : (this._Color.substr(0,5) == "rgba(")? this._Color.substr(3,this._Color.length-4).split(',')[3]  >>> 0 : 1;
-		this._Color_target = this.convertColor(opts.color_target);
-		this._Color = this.convertColor(this._Color);
+		if (opts.color_target){
+			this._Color_target_is_rgba = (opts.color_target.substr(0,5) == "rgba(");
+			this._Color = $jO.css("background-color");
+			this._Color_target_alpha = (this._Color_target_is_rgba)? opts.color_target.substr(3,opts.color_target.length-4).split(',')[3]  >>> 0   : 1;
+			this._Color_alpha = /^transparent$/i.test('' + this._Color) ? 0 : (this._Color.substr(0,5) == "rgba(")? this._Color.substr(3,this._Color.length-4).split(',')[3]  >>> 0 : 1;
+			this._Color_target = this.convertColor(opts.color_target);
+			this._Color = this.convertColor(this._Color);	
+		}
+		
 
 		this._Direction = opts.direction.toUpperCase();
 		this._Light = opts.light;
