@@ -25,6 +25,7 @@ Options
   * depth : You can adjust the perspective effect (default : 0.12)
   * light : You can adjust light and shadow intensity (default : 60)
   * noCSS : You can force Flippy to NOT use CSS3 properties even if the browser support it (default : false)
+  * noRemove: You can prevent Flippy from injecting and removing dom elements, instead use css to show/hide
   * onStart : The function triggered before the animation start
   * onMidway : The function triggered at half animation
   * onAnimation : The function triggered each time the Flippy is refreshed
@@ -61,6 +62,27 @@ $("#myFlippyBox").flippy({
 	onFinish:function(){
 		alert("ok, it's flipped :)");
 	}
+});
+
+// If you want to revert the last animation
+$("#myFlippyBox").flippyReverse();
+```
+Example noRemove
+--------
+``` javascript
+$("#myFlippyBox").flippy({
+  verso:"#backSide",
+  recto:"#frontSide",
+  backhtml: "<div id='backSide'>Hello</div>"
+  noRemove: true,
+  direction:"TOP",
+  duration:"750",
+  onStart:function(){
+    alert("Let's flip");
+  },
+  onFinish:function(){
+    alert("ok, it's flipped :)");
+  }
 });
 
 // If you want to revert the last animation
