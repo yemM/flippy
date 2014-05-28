@@ -11,7 +11,7 @@ Features
   * Animate multiple element simultaneously
   * Revert the last flip animation with $('#myElement').flippyReverse();
   * Multiple callback on start, half way, during the animation and when finished
-
+  * Flip content without breaking event bindings
 
 Options
 -------
@@ -25,7 +25,8 @@ Options
   * depth : You can adjust the perspective effect (default : 0.12)
   * light : You can adjust light and shadow intensity (default : 60)
   * noCSS : You can force Flippy to NOT use CSS3 properties even if the browser support it (default : false)
-  * noRemove: You can prevent Flippy from injecting and removing dom elements, instead use css to show/hide
+  * noRemove: You can prevent Flippy from injecting and removing dom elements, instead use css to show/hide (default : false)
+  * backhtml: Use to inject content into the flipbox even when noRemove is true
   * onStart : The function triggered before the animation start
   * onMidway : The function triggered at half animation
   * onAnimation : The function triggered each time the Flippy is refreshed
@@ -69,6 +70,18 @@ $("#myFlippyBox").flippyReverse();
 ```
 Example noRemove
 --------
+
+Setting noRemove to true prevents Flippy from injecting elements into the DOM as well as using remove. This is useful for elements with event bindings that can be lost when removed from the DOM.
+
+When using noRemove, verso and recto have different purposes. Instead of holding the content to inject into the DOM, verso and recto represent a selector of the content to be flipped to and the currently displayed content.
+
+  * noRemove : Set to true to use noRemove instead of normal inject/remove Flippy
+  * verso : Selector of the content to flip to
+  * recto : Selector of the currently displayed content (used for flippyReverse)
+  * backhtml : Use to inject content into the flipbox even when noRemove is true
+
+If the element that verso points to exists already, backhtml does not re-inject content.
+
 ``` javascript
 $("#myFlippyBox").flippy({
   verso:"#backSide",
