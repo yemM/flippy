@@ -18,9 +18,9 @@
     <div id="wrapper">
         <h1>jQuery flip effect with Flippy</h1>
         <div class="row">
-            <div class="flipbox-container box100">
+            <div class="flipbox-container box100" style="perspective: 1500; -webkit-perspective: 1500; -moz-perspective: 1500;">
                 <div id="flipbox1" class="flipbox">
-                    <span>Hello !</span>
+                    <span id="default">Hello !</span>
                 </div>
             </div>
             
@@ -48,7 +48,7 @@
             <div class="flipbox-container">
             
                 <div class="flipbox">
-                    <span>Hello !</span>
+                    <span id="default">Hello !</span>
                 </div>
             
             </div>
@@ -59,8 +59,12 @@
         <pre class="brush: js">
             $(".flipbox").flippy({
                 color_target: "red",
-                duration: "500",
-                verso: "woohoo"
+                direction: "left",
+                duration: "750",
+                verso: "#left-content",
+                recto: ".current-content",
+                backhtml: "<span id='left-content'>Woohoo !</span>",
+                noRemove: true
              });
         </pre>
         
@@ -81,6 +85,8 @@
             <li><strong>depth</strong> : You can adjust the perspective effect (default : 0.12)</li>
             <li><strong>light</strong> : You can adjust light and shadow intensity (default : 60)</li>
             <li><strong>noCSS</strong> : You can force Flippy to NOT use CSS3 properties even if the browser support it (default : false)</li>
+            <li><strong>noRemove</strong> : You can prevent Flippy from removing and re-injecting dom elements, instead use css to show/hide</li>
+            <li><strong>backhtml</strong> : Inject a new side to flip to</li>
         </ul>
         
         <h2>Callbacks</h2>
@@ -91,7 +97,8 @@
             $(".flipbox").flippy({
                 color_target: "red",
                 duration: "500",
-                verso: "woohoo",
+                verso: "#left-content",
+                recto: ".current-content",
                 onStart: function(){
                     // Your code here
                 }
@@ -128,12 +135,12 @@
     <a href="https://github.com/lepixel/flippy"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub"></a>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <!--[if lt IE 9]>
-	<script src="js/excanvas.min.js" type="text/javascript"></script>
-	<![endif]-->
+  <script src="js/excanvas.min.js" type="text/javascript"></script>
+  <![endif]-->
     <script type="text/javascript" src="jquery.flippy.min.js"></script>
     <script type="text/javascript" src="js/shCore.js"></script>
     <script type="text/javascript" src="js/shBrushJScript.js"></script>
     <script type="text/javascript" src="js/shBrushXml.js"></script>
-    <script type="text/javascript" src="demo.js"></script>
+    <script type="text/javascript" src="demoNoRemove.js"></script>
 </body>
 </html>
