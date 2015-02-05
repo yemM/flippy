@@ -1,0 +1,22 @@
+{
+  "name": "flippy",
+  "version": "0.1.4",
+  "homepage": "https://github.com/yemM/flippy",
+  "authors": [
+    "Guilhem Marty"
+  ],
+  "description": "Flippy jQuery plugin",
+  "main": "jquery.flippy.min.js",
+  "keywords": [
+    "Flippy",
+    "jQuery"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
